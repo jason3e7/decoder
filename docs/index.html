@@ -5,18 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <link rel="stylesheet" href="css/bootstrap.min.css">
-
-  <title>Hello, world!</title>
+  <script src="js/jquery-3.3.1.min.js"></script>
+  <title>Decoder</title>
 </head>
 
 <body>
 <div class="jumbotron">
   <div class="container">
-    <h1 class="display-3">Hello, world!</h1>
+    <h1 class="display-3">Decoder</h1>
   </div>
 </div>
 <div class="container">
+  <div class="input-group">
+    <input type="text" class="form-control" placeholder="encode text" id="encodeText">
+    <div class="input-group-append">
+      <button class="btn btn-primary" type="button" id="decode">Decode</button>
+    </div>
+  </div>
+  <div id="output">
+  </div>
 </div>
+
+<script type="text/javascript">
+  function isASCII(str) {
+      return /^[\x00-\x7F]*$/.test(str);
+  }
+
+  var encodes = [{
+  	"header" : "base64",
+  	"funcname" : "atob"
+  }];
+
+  document.getElementById('decode').onclick = function(){
+  	var text = document.getElementById('encodeText').value;
+  	$("#output").empty();
+    encodes.forEach(function(e) {
+      var card_header = e.header;
+      var card_title = "";
+      var card_text = "";
+
+      try {
+        card_text = window[e.funcname](text);
+        if (isASCII(card_text)) {
+          card_title = "text in ascii";
+        } else {
+          card_title = "text not in ascii";
+        }
+      } catch(err) {
+      	card_title = "text decode error";
+      	card_text = err.message;
+      }
+
+      html = '<br><div class="card"><div class="card-header">' + card_header + '</div>';
+      html += '<div class="card-body"><h5 class="card-title">' + card_title + '</h5>';
+      html += '<p class="card-text">' + card_text + '</p></div>';
+
+      $("#output").append(html);
+
+    });
+  };
+</script>
 
 <link rel="stylesheet" href="js/bootstrap.min.js">
 </body>
