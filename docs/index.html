@@ -27,6 +27,26 @@
 </div>
 
 <script type="text/javascript">
+  function bin2ascii(text) {
+    var output = "";
+    for (var i = 0 ; i < text.length; i+= 8) {
+      var c = 0;
+      for (var j=0; j < 8 ; j++) {
+        c <<= 1;
+        c |= parseInt(text[i + j]);
+      }
+      output += String.fromCharCode(c);
+    }
+    return output;
+  }
+
+  function hex2ascii(text) {
+    var output = "";
+    for (var i = 0; (i < text.length && text.substr(i, 2) !== '00'); i += 2)
+      output += String.fromCharCode(parseInt(text.substr(i, 2), 16));
+    return output;
+  }
+
   function isASCII(str) {
       return /^[\x00-\x7F]*$/.test(str);
   }
@@ -34,7 +54,13 @@
   var encodes = [{
   	"header" : "base64",
   	"funcname" : "atob"
-  }];
+  }, {
+    "header" : "binary",
+  	"funcname" : "bin2ascii"
+  }, {
+    "header" : "hex",
+  	"funcname" : "hex2ascii"
+  } ];
 
   document.getElementById('decode').onclick = function(){
   	var text = document.getElementById('encodeText').value;
