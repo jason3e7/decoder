@@ -27,11 +27,23 @@
 </div>
 
 <script type="text/javascript">
+
+  var encodes = [{
+    "header" : "base64",
+    "funcname" : "atob"
+  }, {
+    "header" : "binary",
+    "funcname" : "bin2ascii"
+  }, {
+    "header" : "hex",
+    "funcname" : "hex2ascii"
+  } ];
+
   function bin2ascii(text) {
     var output = "";
-    for (var i = 0 ; i < text.length; i+= 8) {
+    for (var i = 0 ; i < text.length; i += 8) {
       var c = 0;
-      for (var j=0; j < 8 ; j++) {
+      for (var j = 0; j < 8 ; j++) { 
         c <<= 1;
         c |= parseInt(text[i + j]);
       }
@@ -48,47 +60,56 @@
   }
 
   function isASCII(str) {
-      return /^[\x00-\x7F]*$/.test(str);
+    return /^[\x20-\x7F]*$/.test(str);
   }
 
-  var encodes = [{
-  	"header" : "base64",
-  	"funcname" : "atob"
-  }, {
-    "header" : "binary",
-  	"funcname" : "bin2ascii"
-  }, {
-    "header" : "hex",
-  	"funcname" : "hex2ascii"
-  } ];
+  function decode(encode, text, order) {
+    var card_header = encode.header;
+    var card_title = "";
+    var card_text = "";
+    var isAscii;
+
+    try {
+      card_text = window[encode.funcname](text);
+      isAscii = (card_text.length !== 0 && isASCII(card_text));
+      if (isAscii) {
+        card_title = "text in ascii";
+      } else {
+        card_title = "text not in ascii";
+      }
+    } catch(err) {
+      card_title = "text decode error";
+      card_text = err.message;
+    }
+
+    html = '<br><div class="card"><div class="card-header">' + order + ". " + card_header + '</div>';
+    html += '<div class="card-body"><h5 class="card-title">' + card_title + '</h5>';
+    html += '<p class="card-text">' + card_text + '</p></div>';
+    
+    if (order == 1 || (order >= 2 && isAscii)) {
+      $("#output").append(html);
+    }
+
+    if (isAscii) {
+      return card_text;
+    }
+    return false;
+  }
+
+  function decodes(text, order) {
+    var i, decode_text;
+    for (i = 0; i < encodes.length; i++) { 
+      decode_text = decode(encodes[i], text, order);
+      if(decode_text !== false) {
+        decodes(decode_text, order + 1);
+      } 
+    }
+  }
 
   document.getElementById('decode').onclick = function(){
   	var text = document.getElementById('encodeText').value;
   	$("#output").empty();
-    encodes.forEach(function(e) {
-      var card_header = e.header;
-      var card_title = "";
-      var card_text = "";
-
-      try {
-        card_text = window[e.funcname](text);
-        if (isASCII(card_text)) {
-          card_title = "text in ascii";
-        } else {
-          card_title = "text not in ascii";
-        }
-      } catch(err) {
-      	card_title = "text decode error";
-      	card_text = err.message;
-      }
-
-      html = '<br><div class="card"><div class="card-header">' + card_header + '</div>';
-      html += '<div class="card-body"><h5 class="card-title">' + card_title + '</h5>';
-      html += '<p class="card-text">' + card_text + '</p></div>';
-
-      $("#output").append(html);
-
-    });
+    decodes(text, 1);
   };
 </script>
 
